@@ -551,21 +551,12 @@ def get_predict_args():
     #     description="Select the images you want to classify.",
     # )
     # Add data and url fields
-    parser["files"] = fields.Field(
-        required=False,
-        missing=None,
-        type="file",
-        data_key="data",
-        location="form",
-        description="Select the image you want to classify.",
-    )
-
-    parser["folder"] = fields.List(
+    parser["files"] = fields.List(
         fields.Field(
             required=False,
             missing=None,
             type="file",
-            data_key="data",
+            data_key="files_data",  # Unique data key for files
             location="form",
             description="Select the images you want to classify.",
         ),
@@ -573,7 +564,15 @@ def get_predict_args():
         description="Select the images you want to classify.",
     )
 
-    # Use field.String instead of field.Url because I also want to allow uploading of base 64 encoded data strings
+    parser["zip"] = fields.Field(
+        required=False,
+        missing=None,
+        type="file",
+        data_key="zip_data",  # Unique data key for zip
+        location="form",
+        description="Select the ZIP file containing images you want to classify.",
+    )
+
     parser["urls"] = fields.String(
         required=False,
         missing=None,
