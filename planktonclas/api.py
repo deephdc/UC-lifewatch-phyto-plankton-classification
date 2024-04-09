@@ -272,15 +272,12 @@ import tempfile
 
 @catch_error
 def predict(**args):
-    if not any([args["urls"], args["files"]]) or all([args["urls"], args["files"]]):
-        raise Exception("You must provide either 'url' or 'data' in the payload")
+    if not any([args["urls"], args["files"], args["zip"]]):
+        raise Exception("You must provide either 'urls', 'files', or 'zip' in the payload")
 
-    if args["files"]:
-        args["files"] = [args["files"]]  # patch until list is available
-        return predict_data(args)
-    elif args["urls"]:
-        args["urls"] = [args["urls"]]  # patch until list is available
-        return predict_url(args)
+    # if not any([args["urls"], args["files"]]) or all([args["urls"], args["files"]]):
+    #     raise Exception("You must provide either 'url' or 'data' in the payload")
+
     if args["zip"]:
         # Check if zip file is provided
         zip_file = args["zip"]
@@ -295,10 +292,21 @@ def predict(**args):
             folder_files = os.listdir(temp_dir)
 
             # Assign the list of files to args["files"]
-            args["files"] = [os.path.join(temp_dir, file) for file in folder_files]
+            try:
+                args["files"] = [os.path.join(temp_dir, file) for file in folder_files]
+            except:
+                print("not wowrking cuzo f files")
 
             # Call predict_data function (assuming it handles a list of files)
             return predict_data(args)
+    elif args["files"]:
+        args["files"] = [args["files"]]  # patch until list is available
+        print(args["files"])
+        return predict_data(args)
+    elif args["urls"]:
+        args["urls"] = [args["urls"]]  # patch until list is available
+        return predict_url(args)
+
 
         # args["files"] = folder_files
 
