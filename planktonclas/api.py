@@ -280,12 +280,16 @@ def predict(**args):
 
     if args["zip"]:
         # Check if zip file is provided
+        print("zip starter")
         zip_file = args["zip"]
 
         # Create a temporary directory to extract the files
         with tempfile.TemporaryDirectory() as temp_dir:
             # Extract the zip file
-            with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+            print("extractinz ip")
+            print(zip_file)
+            print(zip_file.filename)
+            with zipfile.ZipFile(zip_file.filename, 'r') as zip_ref:
                 zip_ref.extractall(temp_dir)
 
             # Get the list of files extracted from the zip
