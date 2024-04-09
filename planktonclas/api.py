@@ -366,12 +366,11 @@ def predict_data(args):
     Function to predict an image in binary format
     """
     # Check user configuration
-    print("updating query")
     update_with_query_conf(args)
     conf = config.conf_dict
 
     merge = False
-    print("local error")
+
     catch_localfile_error(args["files"])
     # print("args: ", args)
     # print("args: ", args['files'])
@@ -388,11 +387,12 @@ def predict_data(args):
 
     # Create a list with the path to the images
     filenames = [f.filename for f in args["files"]]
-    original_filename = [f.original_filename for f in args["files"]]
+    original_filenames = [f.original_filename for f in args["files"]]
 
     # Make the predictions
     try:
         with graph.as_default():
+            print("predicting")
             pred_lab, pred_prob = test_utils.predict(model=model,
                                                     X=filenames,
                                                     conf=conf,
@@ -408,21 +408,24 @@ def predict_data(args):
     if merge:
         pred_lab, pred_prob = np.squeeze(pred_lab), np.squeeze(pred_prob)
 
-    return format_prediction(pred_lab, pred_prob, original_filename)
+    return format_prediction(pred_lab, pred_prob, original_filenames)
 
 
-def format_prediction(labels, probabilities, original_filename):
+def format_prediction(labels, probabilities, original_filenames):
     if aphia_ids is not None:
         pred_aphia_ids = [aphia_ids[i] for i in labels]
     else:
         pred_aphia_ids= aphia_ids
-    pred_labels=[class_names[i] for i in labels]
+    print("before")
+    class_index_map = {index:class_name for index, class_name in enumerate(class_names)}
+    pred_lab_names = [[class_index_map[label] for label in labels] for labels in labels]
+    # pred_labels=[class_names[i] for i in labels]
     pred_prob = [float(p) for p in probabilities]
-
+    print("after")
     pred_dict = {
-        "filenames": original_filename,
-        "pred_lab": pred_labels,  # Use converted list
-        "pred_prob": pred_prob,
+        "filenames": original_filenames,
+        "pred_lab": pred_lab_names,  # Use converted list
+        "pred_prob": pred_prob.tolist(),
         "aphia_ids": pred_aphia_ids,
     }
 
@@ -433,7 +436,7 @@ def format_prediction(labels, probabilities, original_filename):
         paths.get_predictions_dir(),
         "{}+{}+top{}.json".format(ckpt_name, split_name, top_K),
     )
-
+    print("json")
     with open(pred_path, "w") as outfile:
         json.dump(pred_dict, outfile, sort_keys=True)
 
